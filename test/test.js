@@ -6,11 +6,11 @@ describe("SimpleFunding", function () {
 
   before(async () => {
     [owner, alice, ...addrs] = await ethers.getSigners();
+    this.SimpleFunding = await ethers.getContractFactory("SimpleFunding");
   });
 
   beforeEach(async () => {
-    const SimpleFunding = await ethers.getContractFactory("SimpleFunding");
-    simpleFunding = await SimpleFunding.deploy();
+    simpleFunding = await this.SimpleFunding.deploy();
     await simpleFunding.deployed();
   });
 
@@ -37,19 +37,19 @@ describe("SimpleFunding", function () {
     expect(await simpleFunding.funders(0)).to.equal(owner.address);
   });
 
-  it("fund changes funderAddressToAmount mapping", async () => {
+  it("Keeps track of donator balance", async () => {
     const amount = ethers.utils.parseEther("0.0005");
     await simpleFunding.fund({ value: amount });
     expect(await simpleFunding.funderAddressToAmount(owner.address)).to.equal(amount);
   });
 
-  it("Only owner can call withdrawTo", async () => {
+  it("Does not allow non-owners to withdraw funds", async () => {
     await expect(
       simpleFunding.connect(alice).withdrawTo(owner.address)
     ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
-  it("withdrawTo changes contract balance and _to balance", async () => {
+  it("Allows an owner to withdraw funds", async () => {
     const amount = ethers.utils.parseEther("0.0005");
     await simpleFunding.fund({ value: amount });
     expect(

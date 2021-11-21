@@ -10,6 +10,9 @@ contract SimpleFunding is Ownable {
   
   function fund() external payable {
     require(msg.value > 0, "Need more ETH");
+
+    // Добавляем адрес в массив funders только при
+    // первом пожертвовании (чтобы избежать дублирования в будущем)
     if (funderAddressToAmount[msg.sender] == 0) {
       funders.push(msg.sender);
     }

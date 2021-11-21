@@ -23,4 +23,4 @@
 3. Создать `.env` файл с переменными `ALCHEMY_API_KEY`, `RINKEBY_PRIVATE_KEY`, `RINKEBY_OWNER_ADDRESS`
  и `RINKEBY_CONTRACT_ADDRESS`
 4. Деплой в rinkeby - `hardhat run scripts/deploy.js --network rinkeby`
-5. Тестовый скрипт (пополняет контракт на 0.000005 eth и вызывает withdrawTo на адрес владельца) - `hardhat run scripts/interact.js --network rinkeby`
+5. Таск для сети Rinkeby (пополняет контракт на 0.0005 eth и вызывает withdrawTo на адрес владельца) - `npx hardhat interact --address <адрес контракта в Rinkeby>`

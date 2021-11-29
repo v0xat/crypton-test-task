@@ -1,6 +1,6 @@
 # Solidity test task
 
-Контракт в Rinkeby - https://rinkeby.etherscan.io/address/0x5ee3efad9b805388711088e39c29dab0073ea2ee
+Контракт в Rinkeby - https://rinkeby.etherscan.io/address/0x1eFBC623d481227657726122EAE6E7356BC715fE
 
 
 Написать смарт контракт для приема пожертвований в виде нативной валюты (ETH, BNB, MATIC)

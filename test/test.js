@@ -2,10 +2,10 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("SimpleFunding", function () {
-  let simpleFunding, owner, alice, addrs;
+  let simpleFunding, owner, alice, bob, addrs;
 
   before(async () => {
-    [owner, alice, ...addrs] = await ethers.getSigners();
+    [owner, alice, bob, ...addrs] = await ethers.getSigners();
     this.SimpleFunding = await ethers.getContractFactory("SimpleFunding");
   });
 
@@ -58,5 +58,19 @@ describe("SimpleFunding", function () {
       [simpleFunding, owner],
       [-amount, amount]
     );
+  });
+
+  it("getFunders returns correct list of funders", async () => {
+    const amount = ethers.utils.parseEther("0.0005");
+    await simpleFunding.fund({ value: amount });
+    await simpleFunding.connect(alice).fund({ value: amount });
+    await simpleFunding.connect(bob).fund({ value: amount });
+    
+    const funders = await simpleFunding.getFunders();
+    expect(funders).to.have.same.members([
+      owner.address,
+      alice.address,
+      bob.address
+    ]);
   });
 });

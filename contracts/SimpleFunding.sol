@@ -18,6 +18,10 @@ contract SimpleFunding is Ownable {
     }
     funderAddressToAmount[msg.sender] += msg.value;
   }
+
+  function getFunders() external view returns(address[] memory) {
+    return funders;
+  }
   
   function withdrawTo(address payable _to) external onlyOwner {
     _to.transfer(address(this).balance);

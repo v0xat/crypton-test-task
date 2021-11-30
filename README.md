@@ -1,5 +1,6 @@
 # Solidity test task
 
+Интерфейс - https://empty-surf-4574.on.fleek.co/
 Контракт в Rinkeby - https://rinkeby.etherscan.io/address/0x29B113b792e789E59719736a1a3dD392901C9061
 
 Написать смарт контракт для приема пожертвований в виде нативной валюты (ETH, BNB, MATIC...)

@@ -19,8 +19,8 @@ task("interact", "Interacts with Rinkeby contract from account specified in .env
     const signer = new ethers.Wallet(process.env.RINKEBY_PRIVATE_KEY, alchemyProvider);
     const simpleFunding = new ethers.Contract(taskArgs.address, contract.abi, signer);
 
-    console.log("Sending 0.0005 ether from " + process.env.RINKEBY_OWNER_ADDRESS);
-    await simpleFunding.fund({ value: ethers.utils.parseEther("0.0005") });
+    console.log("Sending 0.001 ether from " + process.env.RINKEBY_OWNER_ADDRESS);
+    await simpleFunding.fund({ value: ethers.utils.parseEther("0.001") });
 
     console.log("Withdrawing all ether from contract to contract owner " + process.env.RINKEBY_OWNER_ADDRESS);
     await simpleFunding.withdrawTo(await simpleFunding.owner());

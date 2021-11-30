@@ -3,6 +3,7 @@ const { ethers } = require("hardhat");
 
 describe("SimpleFunding", function () {
   let simpleFunding, owner, alice, bob, addrs;
+  const minAmount = ethers.utils.parseEther("0.001");
 
   before(async () => {
     [owner, alice, bob, ...addrs] = await ethers.getSigners();
@@ -26,24 +27,22 @@ describe("SimpleFunding", function () {
   });
 
   it("fund changes contract and funder balances", async () => {
-    const amount = ethers.utils.parseEther("0.001");
     expect(
-      await simpleFunding.fund({ value: String(amount) })
+      await simpleFunding.fund({ value: minAmount })
     ).to.changeEtherBalances(
       [simpleFunding, owner],
-      [amount, -amount]
+      [minAmount, -minAmount]
     );
   });
 
   it("fund adds user to funders list", async () => {
-    await simpleFunding.fund({ value: ethers.utils.parseEther("0.001") });
+    await simpleFunding.fund({ value: minAmount });
     expect(await simpleFunding.funders(0)).to.equal(owner.address);
   });
 
   it("Keeps track of donator balance", async () => {
-    const amount = ethers.utils.parseEther("0.001");
-    await simpleFunding.fund({ value: amount });
-    expect(await simpleFunding.funderAddressToAmount(owner.address)).to.equal(amount);
+    await simpleFunding.fund({ value: minAmount });
+    expect(await simpleFunding.funderAddressToAmount(owner.address)).to.equal(minAmount);
   });
 
   it("Does not allow non-owners to withdraw funds", async () => {
@@ -53,21 +52,19 @@ describe("SimpleFunding", function () {
   });
 
   it("Allows an owner to withdraw funds", async () => {
-    const amount = ethers.utils.parseEther("0.001");
-    await simpleFunding.fund({ value: amount });
+    await simpleFunding.fund({ value: minAmount });
     expect(
       await simpleFunding.withdrawTo(owner.address)
     ).to.changeEtherBalances(
       [simpleFunding, owner],
-      [-amount, amount]
+      [-minAmount, minAmount]
     );
   });
 
   it("getFunders returns correct list of funders", async () => {
-    const amount = ethers.utils.parseEther("0.001");
-    await simpleFunding.fund({ value: amount });
-    await simpleFunding.connect(alice).fund({ value: amount });
-    await simpleFunding.connect(bob).fund({ value: amount });
+    await simpleFunding.fund({ value: minAmount });
+    await simpleFunding.connect(alice).fund({ value: minAmount });
+    await simpleFunding.connect(bob).fund({ value: minAmount });
     
     const funders = await simpleFunding.getFunders();
     expect(funders).to.have.same.members([

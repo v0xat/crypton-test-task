@@ -1,7 +1,6 @@
 # Solidity test task
 
-Контракт в Rinkeby - https://rinkeby.etherscan.io/address/0x1eFBC623d481227657726122EAE6E7356BC715fE
-
+Контракт в Rinkeby - https://rinkeby.etherscan.io/address/0x29B113b792e789E59719736a1a3dD392901C9061
 
 Написать смарт контракт для приема пожертвований в виде нативной валюты (ETH, BNB, MATIC...)
 
@@ -15,11 +14,10 @@
 Доп задание:  
 - Написать скрипт deploy в тестовую сеть rinkeby
 - Написать таски для сети rinkeby
+- Сделать UI, отражающий основные функции контракта
 
 ### Для запуска:
-1. `npm install`
-2. Тесты - `npx hardhat test`
-3. Создать `.env` файл с переменными `ALCHEMY_API_KEY`, `RINKEBY_PRIVATE_KEY`, `RINKEBY_OWNER_ADDRESS`
- и `RINKEBY_CONTRACT_ADDRESS`
-4. Деплой в rinkeby - `npx hardhat run scripts/deploy.js --network rinkeby`
-5. Таск для сети Rinkeby (пополняет контракт на 0.0005 eth и вызывает withdrawTo на адрес владельца) - `npx hardhat interact --address <адрес контракта в Rinkeby>`
+1. `make install`
+2. Деплой контракта в rinkeby `make deploy-rinkeby`
+3. Запуск фронтенда `make start-frontend`
+4. Таск для сети Rinkeby (пополняет контракт на 0.001 eth и вызывает withdrawTo на адрес владельца) - `npx hardhat interact --address <адрес контракта в Rinkeby>`

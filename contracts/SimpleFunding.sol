@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 pragma solidity ^0.8.10;
 
 contract SimpleFunding is Ownable {
+  event ReceivedFunds(address indexed from, uint256 amount);
+
   address[] public funders;
   mapping(address => uint256) public funderAddressToAmount;
   
@@ -17,6 +19,8 @@ contract SimpleFunding is Ownable {
       funders.push(msg.sender);
     }
     funderAddressToAmount[msg.sender] += msg.value;
+
+    emit ReceivedFunds(msg.sender, msg.value);
   }
 
   function getFunders() external view returns(address[] memory) {

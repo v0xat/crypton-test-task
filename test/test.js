@@ -26,6 +26,12 @@ describe("SimpleFunding", function () {
     })).to.be.revertedWith("Need more ETH");
   });
 
+  it("fund should emit event", async () => {
+    await expect(simpleFunding.fund({ value: minAmount }))
+      .to.emit(simpleFunding, "ReceivedFunds")
+      .withArgs(owner.address, minAmount);
+  });
+
   it("fund changes contract and funder balances", async () => {
     expect(
       await simpleFunding.fund({ value: minAmount })

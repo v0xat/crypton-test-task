@@ -9,7 +9,7 @@ contract SimpleFunding is Ownable {
   mapping(address => uint256) public funderAddressToAmount;
   
   function fund() external payable {
-    require(msg.value > 0, "Need more ETH");
+    require(msg.value >= .001 ether, "Need more ETH");
 
     // Добавляем адрес в массив funders только при
     // первом пожертвовании (чтобы избежать дублирования в будущем)

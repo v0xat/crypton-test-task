@@ -18,12 +18,71 @@ class App extends React.Component {
     this.initialState = {
       selectedAddress: undefined,
       contractData: undefined,
-      balance: undefined,
       alertMsg: undefined,
+      alertType: undefined,
       networkError: undefined,
     };
 
     this.state = this.initialState;
+  }
+
+  initEthers() {
+    // To use Alchemy provider
+    // this._provider = new ethers.providers.getDefaultProvider('rinkeby', {
+    //   alchemy: process.env.REACT_APP_ALCHEMY_API_KEY
+    // });
+    this._provider = new ethers.providers.Web3Provider(window.ethereum, 'rinkeby');
+
+    this._simpleFunding = new ethers.Contract(
+      process.env.REACT_APP_RINKEBY_CONTRACT_ADDRESS,
+      SimpleFundingArtifact.abi,
+      this._provider.getSigner()
+    );
+  }
+
+  async getContractData() {
+    const buildFunders = async (funders) => {
+      return Promise.all(funders.map(async (address) => {
+        try {
+          const amountFunded = await this._simpleFunding.funderAddressToAmount(address);
+          return { address, amount: ethers.utils.formatEther(amountFunded) } 
+        } catch(err) {
+          this.setState({
+            alertMsg: err.message,
+            alertType: 'danger'
+          });
+        }
+      }));
+    }
+    const owner = await this._simpleFunding.owner();
+    const contractBalance = await this._provider.getBalance(this._simpleFunding.address);
+    const funders = await this._simpleFunding.getFunders();
+    const fundersWithAmount = await buildFunders(funders);
+
+    this.setState({ contractData: {
+      owner: owner.toLowerCase(),
+      balance: ethers.utils.formatEther(contractBalance),
+      fundersWithAmount
+    }});
+  }
+
+  subscribeToEvents() {
+    this._simpleFunding.on("ReceivedFunds", (from, amount, event) => {
+      console.log(`Received funds (${ethers.utils.formatEther(amount)} ETH) from ${from}`);
+      this.getContractData();
+    });
+
+    const filterDonationsByUser = this._simpleFunding.filters.ReceivedFunds(this.state.selectedAddress);
+    this._simpleFunding.on(filterDonationsByUser, (from, amount, event) => {
+      const alertMsg = `You successfully sent me (${ethers.utils.formatEther(amount)} ETH)`;
+      this.setState({ alertMsg, alertType: 'success' });
+    });
+  }
+
+  componentDidMount(){
+    this.initEthers();
+    this.getContractData();
+    this.subscribeToEvents();
   }
 
   render() {
@@ -81,7 +140,7 @@ class App extends React.Component {
               </button>
               </fieldset>
             </form> : ''}
-            <Alert message={this.state.alertMsg}/>
+            <Alert message={this.state.alertMsg} type={this.state.alertType}/>
           </div>
           <div className="col-6">
             <h4>Funders:</h4>
@@ -106,7 +165,8 @@ class App extends React.Component {
       });
     } catch(err) {
       this.setState({
-        alertMsg: err.message
+        alertMsg: err.message,
+        alertType: 'danger'
       });
     }
   }
@@ -122,20 +182,20 @@ class App extends React.Component {
       await this._simpleFunding.withdrawTo(address);
     } catch(err) {
       this.setState({
-        alertMsg: err.message
+        alertMsg: err.message,
+        alertType: 'danger'
       });
     }
   }
 
   fundersList() {
-    const { funders } = this.state.contractData;
-    const listFunders = funders.map((funder, i) => 
+    const { fundersWithAmount } = this.state.contractData;
+    return fundersWithAmount.map((funder, i) => 
       <ul className="list-group list-group-horizontal" key={i}>
         <li className="list-group-item flex-fill">{funder.address}</li>
         <li className="list-group-item flex-fill">{funder.amount} ETH</li>
       </ul>
     );
-    return listFunders;
   }
 
   async connectWallet() {
@@ -146,65 +206,19 @@ class App extends React.Component {
       return;
     }
 
-    this.init(selectedAddress);
+    this.setState({ selectedAddress });
 
     window.ethereum.on("accountsChanged", ([newAddress]) => {
       if (newAddress === undefined) {
         return this.resetState();
       }
       
-      this.init(newAddress);
+      this.setState({
+        selectedAddress: newAddress,
+      });
     });
 
-    window.ethereum.on("chainChanged", ([networkId]) => {
-      this.resetState();
-    });
-  }
-
-  init(userAddress) {
-    this.setState({
-      selectedAddress: userAddress,
-    });
-
-    this.initEthers();
-
-    this.getContractData();
-  }
-
-  async initEthers() {
-    // To use Alchemy provider
-    // this._provider = new ethers.providers.getDefaultProvider('rinkeby', {
-    //   alchemy: process.env.REACT_APP_ALCHEMY_API_KEY
-    // });
-    this._provider = new ethers.providers.Web3Provider(window.ethereum, 'rinkeby');
-
-    this._simpleFunding = new ethers.Contract(
-      process.env.REACT_APP_RINKEBY_CONTRACT_ADDRESS,
-      SimpleFundingArtifact.abi,
-      this._provider.getSigner()
-    );
-  }
-
-  async getContractData() {
-    const owner = await this._simpleFunding.owner();
-    const balance = await this._provider.getBalance(this._simpleFunding.address);
-    const fundersAddresses = await this._simpleFunding.getFunders();
-    const funders = await Promise.all(fundersAddresses.map(async (address) => {
-      try {
-        const amountFunded = await this._simpleFunding.funderAddressToAmount(address);
-        return { address, amount: ethers.utils.formatEther(amountFunded) } 
-      } catch(err) {
-        this.setState({
-          alertMsg: err.message
-        });
-      }
-    }));
-
-    this.setState({ contractData: {
-      owner: owner.toLowerCase(),
-      balance: ethers.utils.formatEther(balance),
-      funders
-    }});
+    window.ethereum.on("chainChanged", (_chainId) => this.resetState());
   }
 
   checkNetwork(net_version) {
